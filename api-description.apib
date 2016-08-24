@@ -1,0 +1,27 @@
+FORMAT: 1A
+
+# MOPH
+
+Description
+
+# GET /__health
++ Response 200 (application/json)
+  {
+    "checks": [
+    {
+      "businessImpact": "No Articles from PortalPub will be published!",
+      "checkOutput": "cms-notifier service is unreachable",
+      "lastUpdated": "2016-08-24T15:46:11.33737686+01:00",
+      "name": "cms-notifier Availabililty Check",
+      "ok": false,
+      "panicGuide": "",
+      "severity": 1,
+      "technicalSummary": "Checks that cms-notifier Service is reachable. Methode Publish Handler forwards published articles onto cms-notifier."
+    }
+    ],
+    "description": "A RESTful API which accepts Methode Articles and appends a vanity url before passing on to the UPP Stack",
+    "name": "methode-publish-handler",
+    "schemaVersion": 1,
+    "ok": false,
+    "severity": 1
+  }
