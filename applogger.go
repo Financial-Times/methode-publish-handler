@@ -1,9 +1,10 @@
 package main
 
 import (
+	"net/http"
+
 	tid "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Sirupsen/logrus"
-	"net/http"
 )
 
 type AppLogger struct {
@@ -49,10 +50,9 @@ func (appLogger *AppLogger) ErrorEvent(serviceName string, requestUrl string, tr
 		"transaction_id": transactionId,
 		"error":          err,
 		"uuid":           uuid,
-	}).
-		Warnf("Cannot reach %s host", serviceName)
-
+	}).Warnf("Cannot reach %s host", serviceName)
 }
+
 func (appLogger *AppLogger) RequestFailedEvent(serviceName string, requestUrl string, resp *http.Response, uuid string) {
 	appLogger.log.WithFields(logrus.Fields{
 		"event":          "request_failed",
@@ -61,8 +61,7 @@ func (appLogger *AppLogger) RequestFailedEvent(serviceName string, requestUrl st
 		"transaction_id": resp.Header.Get(tid.TransactionIDHeader),
 		"status":         resp.StatusCode,
 		"uuid":           uuid,
-	}).
-		Warnf("Request failed. %s responded with %s", serviceName, resp.Status)
+	}).Warnf("Request failed. %s responded with %s", serviceName, resp.Status)
 }
 
 func (appLogger *AppLogger) ResponseEvent(serviceName string, requestUrl string, resp *http.Response, uuid string) {
@@ -73,6 +72,5 @@ func (appLogger *AppLogger) ResponseEvent(serviceName string, requestUrl string,
 		"request_url":    requestUrl,
 		"transaction_id": resp.Header.Get(tid.TransactionIDHeader),
 		"uuid":           uuid,
-	}).
-		Info("Response from " + serviceName)
+	}).Info("Response from " + serviceName)
 }

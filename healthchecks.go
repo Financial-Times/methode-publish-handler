@@ -2,32 +2,20 @@ package main
 
 import (
 	"fmt"
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"net/http"
+
+	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 )
 
-func (sc *ServiceConfig) nativeContentSourceCheck() fthealth.Check {
+func (config *ServiceConfig) notifierCheck() fthealth.Check {
 	return fthealth.Check{
-		BusinessImpact:   "Editorial users won't be able to preview articles",
-		Name:             sc.sourceAppName + " Availabililty Check",
-		PanicGuide:       sc.sourceAppPanicGuide,
+		BusinessImpact:   "No Articles from PortalPub will be published!",
+		Name:             config.notifierName + " Availabililty Check",
+		PanicGuide:       config.notifierPanicGuideURL,
 		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.sourceAppName + " Service is reachable. Article Preview Service requests native content from " + sc.sourceAppName + " service.",
+		TechnicalSummary: "Checks that \"" + config.notifierName + "\" Service is reachable. MOPH publishes articles to \"" + config.notifierName + "\" after pre-processing them for vanity urls.",
 		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.sourceAppName, sc.nativeContentAppHealthUri, sc.nativeContentAppAuth, "")
-		},
-	}
-}
-
-func (sc *ServiceConfig) transformerServiceCheck() fthealth.Check {
-	return fthealth.Check{
-		BusinessImpact:   "Editorial users won't be able to preview articles",
-		Name:             sc.transformAppName + " Availabililty Check",
-		PanicGuide:       sc.transformAppPanicGuide,
-		Severity:         1,
-		TechnicalSummary: "Checks that " + sc.transformAppName + " Service is reachable. Article Preview Service relies on " + sc.transformAppName + " service to process content.",
-		Checker: func() (string, error) {
-			return checkServiceAvailability(sc.transformAppName, sc.transformAppHealthUri, "", sc.transformAppHostHeader)
+			return checkServiceAvailability(config.notifierName, config.notifierHealthcheckURL, "", "")
 		},
 	}
 }
