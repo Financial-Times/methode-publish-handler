@@ -6,6 +6,7 @@ import (
 	"time"
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
 	"github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/handlers"
@@ -23,12 +24,12 @@ func main() {
 	app.Version("methode-publish-handler", "0.0.0")
 
 	appName := app.StringOpt("app-name", "methode-publish-handler", "The name of this service")
-	appPort := app.StringOpt("app-port", "8080", "HTTP Port for the app")
+	appPort := app.StringOpt("app-port", "8084", "HTTP Port for the app")
 
-	notifierName := app.StringOpt("notifier", "8080", "The notifier service name")
-	notifierURL := app.StringOpt("notifier-url", "8080", "The url for the notifier")
-	notifierPanicGuideURL := app.StringOpt("notifier-panic-guide", "8080", "The notifier panic guide url")
-	notifierHealthcheckURL := app.StringOpt("notifier-health-url", "8080", "The notifier healthcheck url")
+	notifierName := app.StringOpt("notifier", "cms-notifier", "The notifier service name")
+	notifierURL := app.StringOpt("notifier-url", "http://localhost:8080/notify", "The url for the notifier")
+	notifierPanicGuideURL := app.StringOpt("notifier-panic-guide", "", "The notifier panic guide url")
+	notifierHealthcheckURL := app.StringOpt("notifier-health-url", "http://localhost:8080/__health", "The notifier healthcheck url")
 
 	/*logMetrics := app.Bool(cli.BoolOpt{
 		Name:   "log-metrics",
@@ -48,7 +49,7 @@ func main() {
 		}
 		appLogger := NewAppLogger()
 		metricsHandler := NewMetrics()
-		contentHandler := ContentHandler{&sc, appLogger, &metricsHandler}
+		contentHandler := NotifierHandler{&sc, appLogger, &metricsHandler}
 
 		handler := setupServiceHandler(sc, metricsHandler, contentHandler)
 
@@ -64,10 +65,11 @@ func main() {
 	app.Run(os.Args)
 }
 
-func setupServiceHandler(config ServiceConfig, metricsHandler Metrics, contentHandler ContentHandler) *mux.Router {
+func setupServiceHandler(config ServiceConfig, metricsHandler Metrics, notifierHandler NotifierHandler) *mux.Router {
 	r := mux.NewRouter()
-	/*r.Path("/content-preview/{uuid}").Handler(handlers.MethodHandler{"GET": oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry,
-	oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), contentHandler))})*/
+
+	decoratedHandler := oldhttphandlers.HTTPMetricsHandler(metricsHandler.registry, oldhttphandlers.TransactionAwareRequestLoggingHandler(logrus.StandardLogger(), notifierHandler))
+	r.Path("/notify").Handler(handlers.MethodHandler{"POST": decoratedHandler})
 
 	r.Path(httphandlers.BuildInfoPath).HandlerFunc(httphandlers.BuildInfoHandler)
 	r.Path(httphandlers.PingPath).HandlerFunc(httphandlers.PingHandler)

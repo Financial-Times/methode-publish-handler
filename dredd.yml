@@ -2,7 +2,7 @@ dry-run: null
 hookfiles: null
 language: go
 sandbox: false
-server: ./methode-publish-handler
+server: './methode-publish-handler --notifier-url=http://localhost:9000/__cms-notifier/notify'
 server-wait: 3
 init: false
 custom:
@@ -32,4 +32,4 @@ hooks-worker-handler-host: localhost
 hooks-worker-handler-port: 61321
 config: ./dredd.yml
 blueprint: api-description.apib
-endpoint: 'http://localhost:8080'
+endpoint: 'http://localhost:8084'
