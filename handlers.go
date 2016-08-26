@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 
@@ -22,26 +23,35 @@ type NotifierHandler struct {
 	metrics *Metrics
 }
 
-type publishedArticle struct {
-	uuid string
+type PublishedArticle struct {
+	UUID             string   `json:"uuid"`
+	SystemAttributes string   `json:"systemAttributes"`
+	LastModified     string   `json:"lastModified"`
+	Type             string   `json:"type"`
+	WorkflowStatus   string   `json:"workflowStatus"`
+	UsageTickets     string   `json:"usageTickets"`
+	LinkedObjects    []string `json:"linkedObjects"`
+	Value            string   `json:"value"`
+	Attributes       string   `json:"attributes"`
+	WebURL           string   `json:"webUrl,omitempty"`
 }
 
 func (h NotifierHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	decoder := json.NewDecoder(r.Body)
-	article := publishedArticle{}
+	article := PublishedArticle{}
 	decoder.Decode(&article)
 
-	h.log.TransactionStartedEvent(r.RequestURI, tid.GetTransactionIDFromRequest(r), article.uuid)
+	h.log.TransactionStartedEvent(r.RequestURI, tid.GetTransactionIDFromRequest(r), article.UUID)
 
 	vanity := vanities.GetVanity()
 	article = appendVanityToContent(article, vanity)
 
 	ctx := tid.TransactionAwareContext(context.Background(), r.Header.Get(tid.TransactionIDHeader))
-	ctx = context.WithValue(ctx, uuidKey, article.uuid)
+	ctx = context.WithValue(ctx, uuidKey, article.UUID)
 
-	ok, resp := h.postToNotifier(ctx, w)
+	ok, resp := h.postToNotifier(ctx, w, article)
 	if !ok {
 		return
 	}
@@ -50,14 +60,21 @@ func (h NotifierHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.metrics.recordResponseEvent()
 }
 
-func (h NotifierHandler) postToNotifier(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
+func (h NotifierHandler) postToNotifier(ctx context.Context, w http.ResponseWriter, article PublishedArticle) (ok bool, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
-	transactionId, _ := tid.GetTransactionIDFromContext(ctx)
+	transactionID, _ := tid.GetTransactionIDFromContext(ctx)
 
-	h.log.RequestEvent(h.config.notifierName, h.config.notifierURL, transactionId, uuid)
-	req, err := http.NewRequest("POST", h.config.notifierURL, nil)
+	js, err := json.Marshal(article)
+	if err != nil {
+		h.log.ErrorEvent(h.config.notifierName, h.config.notifierURL, transactionID, err, uuid)
+		h.metrics.recordErrorEvent()
+		return false, nil
+	}
 
-	req.Header.Set(tid.TransactionIDHeader, transactionId)
+	h.log.RequestEvent(h.config.notifierName, h.config.notifierURL, transactionID, uuid)
+	req, err := http.NewRequest("POST", h.config.notifierURL, bytes.NewBuffer(js))
+
+	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err = client.Do(req)
@@ -69,7 +86,7 @@ func (h NotifierHandler) postToNotifier(ctx context.Context, w http.ResponseWrit
 	}
 
 	if err != nil {
-		h.log.ErrorEvent(h.config.notifierName, h.config.notifierURL, transactionId, err, uuid)
+		h.log.ErrorEvent(h.config.notifierName, h.config.notifierURL, transactionID, err, uuid)
 		h.metrics.recordErrorEvent()
 		return false, nil
 	}
@@ -84,6 +101,7 @@ func (h NotifierHandler) postToNotifier(ctx context.Context, w http.ResponseWrit
 	return false, resp
 }
 
-func appendVanityToContent(article publishedArticle, vanity vanities.Vanity) publishedArticle {
+func appendVanityToContent(article PublishedArticle, vanity vanities.Vanity) PublishedArticle {
+	article.WebURL = vanity.WebURL
 	return article
 }
