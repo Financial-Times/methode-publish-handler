@@ -2,7 +2,7 @@ dry-run: null
 hookfiles: null
 language: go
 sandbox: false
-server: './methode-publish-handler --notifier-url=http://localhost:9000/__cms-notifier/notify'
+server: './methode-publish-handler --notifier-url=http://httpbin.org/post'
 server-wait: 3
 init: false
 custom:

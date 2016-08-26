@@ -26,7 +26,9 @@ type publishedArticle struct {
 	uuid string
 }
 
-func (h NotifierHandler) ServeHTTP(responseWriter http.ResponseWriter, r *http.Request) {
+func (h NotifierHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	decoder := json.NewDecoder(r.Body)
 	article := publishedArticle{}
 	decoder.Decode(&article)
@@ -39,16 +41,16 @@ func (h NotifierHandler) ServeHTTP(responseWriter http.ResponseWriter, r *http.R
 	ctx := tid.TransactionAwareContext(context.Background(), r.Header.Get(tid.TransactionIDHeader))
 	ctx = context.WithValue(ctx, uuidKey, article.uuid)
 
-	ok, resp := h.postToNotifier(ctx, responseWriter)
+	ok, resp := h.postToNotifier(ctx, w)
 	if !ok {
 		return
 	}
 
-	io.Copy(responseWriter, resp.Body)
+	io.Copy(w, resp.Body)
 	h.metrics.recordResponseEvent()
 }
 
-func (h NotifierHandler) postToNotifier(ctx context.Context, responseWriter http.ResponseWriter) (ok bool, resp *http.Response) {
+func (h NotifierHandler) postToNotifier(ctx context.Context, w http.ResponseWriter) (ok bool, resp *http.Response) {
 	uuid := ctx.Value(uuidKey).(string)
 	transactionId, _ := tid.GetTransactionIDFromContext(ctx)
 
@@ -61,9 +63,9 @@ func (h NotifierHandler) postToNotifier(ctx context.Context, responseWriter http
 	resp, err = client.Do(req)
 
 	if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusOK) {
-		responseWriter.WriteHeader(resp.StatusCode)
+		w.WriteHeader(resp.StatusCode)
 	} else {
-		responseWriter.WriteHeader(http.StatusServiceUnavailable)
+		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 
 	if err != nil {
