@@ -6,7 +6,7 @@ type Vanity struct {
 }
 
 // GetVanity Given (data tbc) it will lookup the vanity url and return it as a Vanity struct.
-func GetVanity() (Vanity) {
-	print("Retrieving vanity.")
-	return Vanity{"junk"}
+// TODO Move this back to handlers?
+func GetVanity() Vanity {
+	return Vanity{""}
 }

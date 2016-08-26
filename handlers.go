@@ -33,7 +33,7 @@ type PublishedArticle struct {
 	LinkedObjects    []string `json:"linkedObjects"`
 	Value            string   `json:"value"`
 	Attributes       string   `json:"attributes"`
-	WebURL           string   `json:"webUrl,omitempty"`
+	WebURL           string   `json:"webUrl"`
 }
 
 func (h NotifierHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
