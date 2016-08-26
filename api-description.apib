@@ -5,6 +5,9 @@ FORMAT: 1A
 Methode Publish Handler intercepts methode publication messages, and does some extra enrichment prior to forwarding on to the rest of the UPP stack (CMS Notifier etc.).
 
 # GET /__health
+
+Returns the results of the healthchecks, which should lightly test the components dependencies.
+
 + Response 200 (application/json)
 
         {
@@ -28,6 +31,9 @@ Methode Publish Handler intercepts methode publication messages, and does some e
         }
 
 # GET /__build-info
+
+Displays build info for the component.
+
 + Response 200 (application/json; charset=UTF-8)
 
         {
@@ -39,13 +45,16 @@ Methode Publish Handler intercepts methode publication messages, and does some e
         }
 
 # POST /notify
+
+Simulates a direct call to the CMS Notifier, but instead calls the Vanity Service, and appends the webUrl to the article output. It accepts a Methode JSON document.
+
 + Request (application/json)
 
         {
           "systemAttributes":"",
           "lastModified": "",
-          "uuid": "6fcf1090-67b7-11e6-a0b1-d87a9fea034f",
-          "type": "EOM::WebContainer",
+          "uuid": "",
+          "type": "",
           "workflowStatus": "",
           "usageTickets": "",
           "linkedObjects": [],
