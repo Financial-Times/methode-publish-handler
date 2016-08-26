@@ -36,7 +36,7 @@ func main() {
 		Value:  false,
 		Desc:   "Whether to log metrics. Set to true if running locally and you want metrics output",
 		EnvVar: "LOG_METRICS",
-	})*/
+	})*/ // TODO: check if needed
 
 	app.Action = func() {
 		sc := ServiceConfig{
@@ -54,7 +54,7 @@ func main() {
 		handler := setupServiceHandler(sc, metricsHandler, contentHandler)
 
 		appLogger.ServiceStartedEvent(*appName, sc.asMap())
-		//metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics)
+		//metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics) // TODO: check if needed
 
 		err := http.ListenAndServe(":"+*appPort, handler)
 
