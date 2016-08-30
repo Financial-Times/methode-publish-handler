@@ -13,6 +13,7 @@ import (
 )
 
 var logger = NewAppLogger()
+var testClient = &http.Client{Timeout: timeout}
 
 type MockVanityService struct{}
 
@@ -20,16 +21,16 @@ func (MockVanityService) GetVanity() vanities.Vanity {
 	return vanities.Vanity{"I am vain"}
 }
 
-func createTestHandler(mockServer *httptest.Server, vanityService vanities.VanityService) NotifierHandler {
+func createTestHandler(mockExternalServer *httptest.Server, vanityService vanities.VanityService) NotifierHandler {
 	m := NewMetrics()
-	conf := ServiceConfig{&http.Client{Timeout: timeout}, "", "", "cms-notifier", mockServer.URL, "", ""}
+	conf := ServiceConfig{testClient, "", "", "cms-notifier", mockExternalServer.URL, "", ""}
 	if vanityService == nil {
 		vanityService = vanities.Vanity{}
 	}
 	return NotifierHandler{&conf, logger, &m, vanityService}
 }
 
-func createMockServer(assert *assert.Assertions, mockStatus int, mockBody string, expectedRequestBody string) *httptest.Server {
+func createMockExternalServer(assert *assert.Assertions, mockStatus int, mockBody string, expectedRequestBody string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.log.Info("Request received from handler. Mocking response.")
 		body, _ := ioutil.ReadAll(r.Body)
@@ -37,6 +38,10 @@ func createMockServer(assert *assert.Assertions, mockStatus int, mockBody string
 		w.WriteHeader(mockStatus)
 		io.WriteString(w, mockBody)
 	}))
+}
+
+func createMockServer(handler NotifierHandler) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
 }
 
 func TestHandlerProxiesRequestsToNotifierAndAddsVanity(t *testing.T) {
@@ -47,16 +52,20 @@ func TestHandlerProxiesRequestsToNotifierAndAddsVanity(t *testing.T) {
 	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related"}`
 	expectedRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related","webUrl":"I am vain"}`
 
-	mockServer := createMockServer(assert, expectedStatus, expectedBody, expectedRequestBody)
+	mockExternalServer := createMockExternalServer(assert, expectedStatus, expectedBody, expectedRequestBody)
+	defer mockExternalServer.Close()
+	handler := createTestHandler(mockExternalServer, &MockVanityService{})
+
+	mockServer := createMockServer(handler)
 	defer mockServer.Close()
 
-	req := httptest.NewRequest("POST", "/notify", strings.NewReader(mockRequestBody))
-	w := httptest.NewRecorder()
-	handler := createTestHandler(mockServer, &MockVanityService{})
+	req, err := http.NewRequest("POST", mockServer.URL+"/notify", strings.NewReader(mockRequestBody))
 
-	handler.ServeHTTP(w, req)
+	result, err := testClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	result := w.Result()
 	body, err := ioutil.ReadAll(result.Body)
 
 	if err != nil {
@@ -74,16 +83,20 @@ func TestHandlerDoesNotAddVanity(t *testing.T) {
 	expectedStatus := http.StatusOK
 	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related","webUrl":""}`
 
-	mockServer := createMockServer(assert, expectedStatus, expectedBody, mockRequestBody)
+	mockExternalServer := createMockExternalServer(assert, expectedStatus, expectedBody, mockRequestBody)
+	defer mockExternalServer.Close()
+	handler := createTestHandler(mockExternalServer, nil)
+
+	mockServer := createMockServer(handler)
 	defer mockServer.Close()
 
-	req := httptest.NewRequest("POST", "/notify", strings.NewReader(mockRequestBody))
-	w := httptest.NewRecorder()
-	handler := createTestHandler(mockServer, nil)
+	req, err := http.NewRequest("POST", mockServer.URL+"/notify", strings.NewReader(mockRequestBody))
 
-	handler.ServeHTTP(w, req)
+	result, err := testClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	result := w.Result()
 	body, err := ioutil.ReadAll(result.Body)
 
 	if err != nil {
@@ -99,16 +112,21 @@ func TestNotFoundNotifierResponse(t *testing.T) {
 	expectedStatus := http.StatusNotFound
 	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related","webUrl":""}`
 
-	mockServer := createMockServer(assert, expectedStatus, "{}", mockRequestBody)
+	mockExternalServer := createMockExternalServer(assert, expectedStatus, "{}", mockRequestBody)
+	defer mockExternalServer.Close()
+
+	handler := createTestHandler(mockExternalServer, nil)
+
+	mockServer := createMockServer(handler)
 	defer mockServer.Close()
 
-	req := httptest.NewRequest("POST", "/notify", strings.NewReader(mockRequestBody))
-	w := httptest.NewRecorder()
-	handler := createTestHandler(mockServer, nil)
+	req, err := http.NewRequest("POST", mockServer.URL+"/notify", strings.NewReader(mockRequestBody))
 
-	handler.ServeHTTP(w, req)
+	result, err := testClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	result := w.Result()
 	body, err := ioutil.ReadAll(result.Body)
 
 	if err != nil {
@@ -124,16 +142,21 @@ func TestOtherFailedNotifierRequests(t *testing.T) {
 	expectedStatus := http.StatusServiceUnavailable
 	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related","webUrl":""}`
 
-	mockServer := createMockServer(assert, 509, "{}", mockRequestBody)
+	mockExternalServer := createMockExternalServer(assert, 509, "{}", mockRequestBody)
+	defer mockExternalServer.Close()
+
+	handler := createTestHandler(mockExternalServer, nil)
+
+	mockServer := createMockServer(handler)
 	defer mockServer.Close()
 
-	req := httptest.NewRequest("POST", "/notify", strings.NewReader(mockRequestBody))
-	w := httptest.NewRecorder()
-	handler := createTestHandler(mockServer, nil)
+	req, err := http.NewRequest("POST", mockServer.URL+"/notify", strings.NewReader(mockRequestBody))
 
-	handler.ServeHTTP(w, req)
+	result, err := testClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	result := w.Result()
 	body, err := ioutil.ReadAll(result.Body)
 
 	if err != nil {

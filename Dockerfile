@@ -1,11 +1,13 @@
-FROM alpine:3.3
+FROM alpine:3.4
 
 ADD *.go .git /methode-publish-handler/
+ADD ./vanities/*.go /methode-publish-handler/vanities/
 
 RUN apk --update add git go \
   && export GOPATH=/gopath \
   && REPO_PATH="github.com/Financial-Times/methode-publish-handler" \
-  && cd content-preview \
+  && cd methode-publish-handler \
+  && echo "Setting up environment" \
   && BUILDINFO_PACKAGE="github.com/Financial-Times/service-status-go/buildinfo." \
   && VERSION="version=$(git describe --tag --always 2> /dev/null)" \
   && DATETIME="dateTime=$(date -u +%Y%m%d%H%M%S)" \
@@ -17,6 +19,7 @@ RUN apk --update add git go \
   && mkdir -p $GOPATH/src/${REPO_PATH} \
   && mv * $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
+  && echo "Getting GO packages" \
   && go get -t ./... \
   && go build -ldflags="${LDFLAGS}" \
   && mv methode-publish-handler /methode-publish-handler-app \
