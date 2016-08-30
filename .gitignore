@@ -3,6 +3,7 @@
 *.a
 *.so
 methode-publish-handler
+api.html
 
 # Folders
 _obj
