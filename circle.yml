@@ -1,9 +1,3 @@
-dependencies:
-  pre:
-    - npm install -g dredd@stable
-test:
-  pre:
-    - dredd
 machine:
   environment:
     GODIST: "go1.7.linux-amd64.tar.gz"
@@ -14,5 +8,11 @@ machine:
     - sudo tar -C /usr/local -xzf download/$GODIST
 
 dependencies:
+  pre:
+    - npm install -g dredd@stable
   cache_directories:
     - ~/download
+
+test:
+  pre:
+    - dredd
