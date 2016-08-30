@@ -27,9 +27,9 @@ RUN apk --update add git go \
   && rm -rf $GOPATH /var/cache/apk/*
 
 CMD exec /methode-publish-handler-app \
-    --app-name $APP_NAME \
-    --app-port $APP_PORT \
-    --notifier $NOTIFIER_NAME \
-    --notifier-url $NOTIFIER_URL \
-    --notifier-panic-guide $NOTIFIER_PANIC_GUIDE \
-    --notifier-health-url $NOTIFIER_HEALTH_URL
+    --app-name="$APP_NAME" \
+    --app-port="$APP_PORT" \
+    --notifier="$NOTIFIER_NAME" \
+    --notifier-url="$NOTIFIER_URL" \
+    --notifier-panic-guide="$NOTIFIER_PANIC_GUIDE" \
+    --notifier-health-url="$NOTIFIER_HEALTH_URL"
