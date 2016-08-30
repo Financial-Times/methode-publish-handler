@@ -68,11 +68,11 @@ func TestHandlerProxiesRequestsToNotifierAndAddsVanity(t *testing.T) {
 	assert.Equal(expectedStatus, result.StatusCode)
 }
 
-func TestHandlerOmitsEmptyFieldsAndDoesNotAddVanity(t *testing.T) {
+func TestHandlerDoesNotAddVanity(t *testing.T) {
 	assert := assert.New(t)
 	expectedBody := "{}"
 	expectedStatus := http.StatusOK
-	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f"}`
+	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related","webUrl":""}`
 
 	mockServer := createMockServer(assert, expectedStatus, expectedBody, mockRequestBody)
 	defer mockServer.Close()
@@ -97,7 +97,7 @@ func TestHandlerOmitsEmptyFieldsAndDoesNotAddVanity(t *testing.T) {
 func TestNotFoundNotifierResponse(t *testing.T) {
 	assert := assert.New(t)
 	expectedStatus := http.StatusNotFound
-	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f"}`
+	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related","webUrl":""}`
 
 	mockServer := createMockServer(assert, expectedStatus, "{}", mockRequestBody)
 	defer mockServer.Close()
@@ -122,7 +122,7 @@ func TestNotFoundNotifierResponse(t *testing.T) {
 func TestOtherFailedNotifierRequests(t *testing.T) {
 	assert := assert.New(t)
 	expectedStatus := http.StatusServiceUnavailable
-	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f"}`
+	mockRequestBody := `{"uuid":"6fcf1090-67b7-11e6-a0b1-d87a9fea034f","systemAttributes":"Some sys attrs","lastModified":"Modified at some stage recently","type":"An interesting document type","workflowStatus":"WorkflowStatus = Currently being unit tested","usageTickets":"Ticket number 42","linkedObjects":["One object linked through this string","Another object"],"value":"Some wonderful FT Content","attributes":"Some other attributes, which probably aren't system related","webUrl":""}`
 
 	mockServer := createMockServer(assert, 509, "{}", mockRequestBody)
 	defer mockServer.Close()

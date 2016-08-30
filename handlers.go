@@ -25,16 +25,16 @@ type NotifierHandler struct {
 }
 
 type PublishedArticle struct {
-	UUID             string   `json:"uuid,omitempty"`
-	SystemAttributes string   `json:"systemAttributes,omitempty"`
-	LastModified     string   `json:"lastModified,omitempty"`
-	Type             string   `json:"type,omitempty"`
-	WorkflowStatus   string   `json:"workflowStatus,omitempty"`
-	UsageTickets     string   `json:"usageTickets,omitempty"`
-	LinkedObjects    []string `json:"linkedObjects,omitempty"`
-	Value            string   `json:"value,omitempty"`
-	Attributes       string   `json:"attributes,omitempty"`
-	WebURL           string   `json:"webUrl,omitempty"`
+	UUID             string   `json:"uuid"`
+	SystemAttributes string   `json:"systemAttributes"`
+	LastModified     string   `json:"lastModified"`
+	Type             string   `json:"type"`
+	WorkflowStatus   string   `json:"workflowStatus"`
+	UsageTickets     string   `json:"usageTickets"`
+	LinkedObjects    []string `json:"linkedObjects"`
+	Value            string   `json:"value"`
+	Attributes       string   `json:"attributes"`
+	WebURL           string   `json:"webUrl"`
 }
 
 func (h NotifierHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
