@@ -7,6 +7,7 @@ import (
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	oldhttphandlers "github.com/Financial-Times/http-handlers-go/httphandlers"
+	"github.com/Financial-Times/methode-publish-handler/vanities"
 	"github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/handlers"
@@ -17,7 +18,6 @@ import (
 const serviceDescription = "A RESTful API which accepts Methode Articles and appends a vanity url before passing on to the UPP Stack"
 
 var timeout = time.Duration(10 * time.Second)
-var client = &http.Client{Timeout: timeout}
 
 func main() {
 	app := cli.App("methode-publish-handler", serviceDescription)
@@ -40,6 +40,7 @@ func main() {
 
 	app.Action = func() {
 		sc := ServiceConfig{
+			&http.Client{Timeout: timeout},
 			*appName,
 			*appPort,
 			*notifierName,
@@ -49,9 +50,9 @@ func main() {
 		}
 		appLogger := NewAppLogger()
 		metricsHandler := NewMetrics()
-		contentHandler := NotifierHandler{&sc, appLogger, &metricsHandler}
+		notifierHandler := NotifierHandler{&sc, appLogger, &metricsHandler, &vanities.Vanity{}}
 
-		handler := setupServiceHandler(sc, metricsHandler, contentHandler)
+		handler := setupServiceHandler(sc, metricsHandler, notifierHandler)
 
 		appLogger.ServiceStartedEvent(*appName, sc.asMap())
 		//metricsHandler.OutputMetricsIfRequired(*graphiteTCPAddress, *graphitePrefix, *logMetrics) // TODO: check if needed
@@ -81,6 +82,7 @@ func setupServiceHandler(config ServiceConfig, metricsHandler Metrics, notifierH
 }
 
 type ServiceConfig struct {
+	httpClient             *http.Client
 	appName                string
 	appPort                string
 	notifierName           string

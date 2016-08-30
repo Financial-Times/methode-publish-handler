@@ -18,22 +18,23 @@ const (
 
 // NotifierHandler Handles publish requests, and the vanity retrieval.
 type NotifierHandler struct {
-	config  *ServiceConfig
-	log     *AppLogger
-	metrics *Metrics
+	config        *ServiceConfig
+	log           *AppLogger
+	metrics       *Metrics
+	vanityService vanities.VanityService
 }
 
 type PublishedArticle struct {
-	UUID             string   `json:"uuid"`
-	SystemAttributes string   `json:"systemAttributes"`
-	LastModified     string   `json:"lastModified"`
-	Type             string   `json:"type"`
-	WorkflowStatus   string   `json:"workflowStatus"`
-	UsageTickets     string   `json:"usageTickets"`
-	LinkedObjects    []string `json:"linkedObjects"`
-	Value            string   `json:"value"`
-	Attributes       string   `json:"attributes"`
-	WebURL           string   `json:"webUrl"`
+	UUID             string   `json:"uuid,omitempty"`
+	SystemAttributes string   `json:"systemAttributes,omitempty"`
+	LastModified     string   `json:"lastModified,omitempty"`
+	Type             string   `json:"type,omitempty"`
+	WorkflowStatus   string   `json:"workflowStatus,omitempty"`
+	UsageTickets     string   `json:"usageTickets,omitempty"`
+	LinkedObjects    []string `json:"linkedObjects,omitempty"`
+	Value            string   `json:"value,omitempty"`
+	Attributes       string   `json:"attributes,omitempty"`
+	WebURL           string   `json:"webUrl,omitempty"`
 }
 
 func (h NotifierHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +46,7 @@ func (h NotifierHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	h.log.TransactionStartedEvent(r.RequestURI, tid.GetTransactionIDFromRequest(r), article.UUID)
 
-	vanity := vanities.GetVanity()
+	vanity := h.vanityService.GetVanity()
 	article = appendVanityToContent(article, vanity)
 
 	ctx := tid.TransactionAwareContext(context.Background(), r.Header.Get(tid.TransactionIDHeader))
@@ -77,7 +78,7 @@ func (h NotifierHandler) postToNotifier(ctx context.Context, w http.ResponseWrit
 	req.Header.Set(tid.TransactionIDHeader, transactionID)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err = client.Do(req)
+	resp, err = h.config.httpClient.Do(req)
 
 	if resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusOK) {
 		w.WriteHeader(resp.StatusCode)

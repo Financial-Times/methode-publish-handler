@@ -18,7 +18,6 @@ RUN apk --update add git go \
   && mv * $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
   && go get -t ./... \
-  && go test ./... \
   && go build -ldflags="${LDFLAGS}" \
   && mv methode-publish-handler /methode-publish-handler-app \
   && apk del go git \
@@ -30,4 +29,4 @@ CMD exec /methode-publish-handler-app \
     --notifier $NOTIFIER_NAME \
     --notifier-url $NOTIFIER_URL \
     --notifier-panic-guide $NOTIFIER_PANIC_GUIDE \
-    --notifier-health-url $NOTIFIER_HEALTH_URL 
+    --notifier-health-url $NOTIFIER_HEALTH_URL

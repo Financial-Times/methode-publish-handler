@@ -15,12 +15,12 @@ func (config *ServiceConfig) notifierCheck() fthealth.Check {
 		Severity:         1,
 		TechnicalSummary: "Checks that \"" + config.notifierName + "\" Service is reachable. MOPH publishes articles to \"" + config.notifierName + "\" after pre-processing them for vanity urls.",
 		Checker: func() (string, error) {
-			return checkServiceAvailability(config.notifierName, config.notifierHealthcheckURL, "", "")
+			return checkServiceAvailability(config.httpClient, config.notifierName, config.notifierHealthcheckURL, "", "")
 		},
 	}
 }
 
-func checkServiceAvailability(serviceName string, healthUri string, auth string, hostHeader string) (string, error) {
+func checkServiceAvailability(client *http.Client, serviceName string, healthUri string, auth string, hostHeader string) (string, error) {
 	req, err := http.NewRequest("GET", healthUri, nil)
 	if auth != "" {
 		req.Header.Set("Authorization", "Basic "+auth)
@@ -30,6 +30,7 @@ func checkServiceAvailability(serviceName string, healthUri string, auth string,
 		req.Host = hostHeader
 	}
 	resp, err := client.Do(req)
+
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return fmt.Sprintf("%s service is unreachable", serviceName), fmt.Errorf("%s service is unreachable", serviceName)
 	}
