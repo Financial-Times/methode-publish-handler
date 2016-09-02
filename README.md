@@ -4,8 +4,8 @@ Methode Publish Handler intercepts methode publication messages, and does some e
 
 ## API
 
-See the `api-description.apib` API Blueprint file for details. To test the API documentation is still valid, simply install DreddJS and run:
+See the [api.md](./api.md) file for details. To test the API documentation is still valid, simply install DreddJS and run (this is run with every Circle CI build):
 
 ```
-dredd
+dredd --config ./api/api.yml
 ```
