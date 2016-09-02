@@ -8,7 +8,7 @@ info:
     name: Peter Clark
     email: peter.clark@ft.com
 
-host: localhost:8084
+#host: localhost:8084
 
 schemes:
   - http
