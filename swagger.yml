@@ -4,6 +4,9 @@ info:
   title: Methode Publish Handler
   description: Methode Publish Handler intercepts methode publication messages, and does some extra enrichment prior to forwarding on to the rest of the UPP stack (CMS Notifier etc.).
   version: "0.0.1"
+  contact:
+    name: Peter Clark
+    email: peter.clark@ft.com
 
 host: localhost:8084
 
@@ -11,8 +14,7 @@ schemes:
   - http
   - https
 
-# will be prefixed to all paths
-# basePath: /v1
+basePath: /
 
 paths:
   /notify:
