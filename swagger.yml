@@ -1,0 +1,201 @@
+swagger: '2.0'
+
+info:
+  title: Methode Publish Handler
+  description: Methode Publish Handler intercepts methode publication messages, and does some extra enrichment prior to forwarding on to the rest of the UPP stack (CMS Notifier etc.).
+  version: "0.0.1"
+
+host: localhost:8084
+
+schemes:
+  - http
+  - https
+
+# will be prefixed to all paths
+# basePath: /v1
+
+paths:
+  /notify:
+    post:
+      summary: Proxies the configured CMS-Notifier.
+      description: Given a POST body of an article via Portal Pub; MOPH will lookup the Vanity url via an API call, append it to the article (as a new json field 'webUrl'), and forward the article on to the configured CMS Notifier for processing in the UPP stack.
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      tags:
+        - API
+      parameters:
+        - name: Native Published Article
+          in: body
+          schema:
+            $ref: '#/definitions/NativeArticle'
+      responses:
+        200:
+          description: CMS Notifier returned 200 for the article.
+          headers:
+            X-Request-Id:
+              type: string
+              description: The transaction ID for this request.
+          schema:
+            type: object
+
+  /__health:
+    get:
+      summary: Health of the Service
+      description: Returns the results of all health checks in JSON format.
+      produces:
+        - application/json
+      tags:
+        - Meta
+      responses:
+        200:
+          description: Results of the healthchecks for this service.
+          schema:
+            $ref: '#/definitions/HealthChecks'
+  /__build-info:
+    get:
+      summary: Returns detailed build information for the binary.
+      produces:
+        - application/json; charset=utf-8
+      tags:
+        - Meta
+      responses:
+        200:
+          description: Displays build info in JSON.
+          schema:
+            $ref: '#/definitions/BuildInfo'
+  /__ping:
+    get:
+      summary: Returns 'pong' if running.
+      produces:
+        - text/plain; charset=utf-8
+      tags:
+        - Meta
+      responses:
+        200:
+          description: Returns 'pong' if running.
+          examples:
+            text/plain; charset=utf-8: pong
+
+definitions:
+  HealthCheck:
+    type: object
+    properties:
+      businessImpact:
+        type: string
+        description: A short statement of what the impact is if the check fails.
+      checkOutput:
+        type: string
+        description: The technical output of the check.
+      lastUpdated:
+        type: string
+        description: When was the check last run.
+      name:
+        type: string
+        description: Name of the check.
+      ok:
+        type: boolean
+        description: Did the check pass?
+      panicGuide:
+        type: string
+        description: Link to the panic guide for the corresponding service.
+      severity:
+        type: integer
+        description: Severity of the problem. 1 is Critical, 2 is Warning.
+      technicalSummary:
+        type: string
+        description: A short description of what the check does.
+
+  HealthChecks:
+    type: object
+    properties:
+      checks:
+        type: array
+        items:
+          $ref: '#/definitions/HealthCheck'
+      description:
+        type: string
+        description: A brief description of what this component does.
+      name:
+        type: string
+        description: The name of the component.
+      schemaVersion:
+        type: integer
+        description: The schema version.
+      ok:
+        type: boolean
+        description: Did any checks fail?
+      severity:
+        type: integer
+        description: Overall serverity for the service. 1 is Critical, 2 is Warning.
+
+  BuildInfo:
+    type: object
+    properties:
+      version:
+        type: string
+        description: Component version.
+      repository:
+        type: string
+        description: Git Repository URL.
+      revision:
+        type: string
+        description: Git revision.
+      builder:
+        type: string
+        description: The version of go used to build the binary.
+      dateTime:
+        type: string
+        description: Build time.
+        #format: date-time
+
+  NativeArticle:
+    type: object
+    required:
+      - systemAttributes
+      - lastModified
+      - uuid
+      - type
+      - workflowStatus
+      - usageTickets
+      - linkedObjects
+      - value
+      - attributes
+    properties:
+      systemAttributes:
+        type: string
+        description: CMS system attributes as XML.
+      lastModified:
+        type: string
+        format: date-time
+        description: Last modified date of the article.
+      uuid:
+        type: string
+        pattern: '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+        description: Unique ID of the article.
+      type:
+        type: string
+        description: CMS type of the article.
+      workflowStatus:
+        type: string
+        description: Status of the article in the CMS workflow.
+      usageTickets:
+        type: string
+        description: Usage tickets as XML.
+      linkedObjects:
+        type: array
+        description: Linked articles as XML.
+        items:
+          type: string
+      value:
+        type: string
+        description: Base64 representation of the full article.
+      attributes:
+        type: string
+        description: Article attributes as XML.
+      webUrl:
+        type: string
+        format: uri
+        readOnly: true
+        description: The vanity url for the service.
