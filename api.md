@@ -21,17 +21,18 @@ Given a POST body of an article via Portal Pub; MOPH will lookup the Vanity url 
     + Body
 
             {
-              "systemAttributes": "ipsum Duis",
-              "lastModified": "3232-03-20T21:23:49.810Z",
-              "uuid": "48936c08-9ee0-dbe1-8cd7-e974ed7b4be7",
-              "type": "esse deserunt exercitation",
-              "workflowStatus": "irure esse sit",
-              "usageTickets": "nostrud",
+              "systemAttributes": "labore dolor sunt",
+              "lastModified": "3290-10-03T11:37:32.844Z",
+              "uuid": "20539721-5b37-f684-a30c-5ae3726056cb",
+              "type": "veniam quis",
+              "workflowStatus": "labore",
+              "usageTickets": "consectetur occaecat",
               "linkedObjects": [
-                "enim ullamco dolore"
+                "commodo",
+                "ut consequat fugiat"
               ],
-              "value": "a",
-              "attributes": "irure tempor"
+              "value": "reprehenderit mollit Ut",
+              "attributes": "et "
             }
 
     + Schema
@@ -141,32 +142,7 @@ Returns the results of all health checks in JSON format.
     + Body
 
             {
-              "checks": [
-                {
-                  "lastUpdated": "sint",
-                  "technicalSummary": "eiusmod",
-                  "panicGuide": "eiusmod proident qui in nost",
-                  "businessImpact": "sit consequat sunt Excepteur",
-                  "checkOutput": "ipsum incididunt amet",
-                  "ok": true,
-                  "severity": 75801957,
-                  "name": "de"
-                },
-                {
-                  "technicalSummary": "exercitation eu ut",
-                  "severity": 42923798,
-                  "name": "ulla",
-                  "ok": false,
-                  "panicGuide": "irure Lorem",
-                  "checkOutput": "ea deserunt laboris",
-                  "lastUpdated": "sed commodo exercitation consectetur"
-                },
-                {
-                  "lastUpdated": "non ex",
-                  "businessImpact": "aliquip Ut qui do nulla"
-                }
-              ],
-              "schemaVersion": -66094298
+              "ok": false
             }
 
     + Schema
