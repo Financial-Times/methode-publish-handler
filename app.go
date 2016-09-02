@@ -78,6 +78,8 @@ func setupServiceHandler(config ServiceConfig, metricsHandler Metrics, notifierH
 	r.Path("/__health").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(fthealth.Handler(config.appName, serviceDescription, config.notifierCheck()))})
 	r.Path("/__metrics").Handler(handlers.MethodHandler{"GET": http.HandlerFunc(metricsHttpEndpoint)})
 
+	r.PathPrefix("/__api").Handler(http.StripPrefix("/__api", http.FileServer(http.Dir("./api/"))))
+
 	return r
 }
 

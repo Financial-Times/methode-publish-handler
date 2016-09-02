@@ -3,4 +3,4 @@ dependencies:
     - npm install -g dredd@stable
 test:
   pre:
-    - dredd
+    - dredd --config ./api/dredd.yml
