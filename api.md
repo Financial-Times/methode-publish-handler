@@ -21,18 +21,17 @@ Given a POST body of an article via Portal Pub; MOPH will lookup the Vanity url 
     + Body
 
             {
-              "systemAttributes": "enim",
-              "lastModified": "3810-12-28T02:34:30.229Z",
-              "uuid": "2b7c4525-6613-f839-e573-e2061108c994",
-              "type": "voluptate mollit",
-              "workflowStatus": "dolor laborum sit dolore incid",
-              "usageTickets": "qui proident",
+              "systemAttributes": "ipsum Duis",
+              "lastModified": "3232-03-20T21:23:49.810Z",
+              "uuid": "48936c08-9ee0-dbe1-8cd7-e974ed7b4be7",
+              "type": "esse deserunt exercitation",
+              "workflowStatus": "irure esse sit",
+              "usageTickets": "nostrud",
               "linkedObjects": [
-                "reprehenderit incididunt fugiat Lorem",
-                "dolor in reprehenderit incididunt dolor"
+                "enim ullamco dolore"
               ],
-              "value": "nostrud dolor velit",
-              "attributes": "nisi elit adipisicing"
+              "value": "a",
+              "attributes": "irure tempor"
             }
 
     + Schema
@@ -142,21 +141,32 @@ Returns the results of all health checks in JSON format.
     + Body
 
             {
-              "schemaVersion": -47418384,
-              "ok": false,
-              "name": "anim vol",
               "checks": [
-                {},
                 {
-                  "businessImpact": "quis commodo in aliquip",
-                  "technicalSummary": "est exercitation aute qui ",
+                  "lastUpdated": "sint",
+                  "technicalSummary": "eiusmod",
+                  "panicGuide": "eiusmod proident qui in nost",
+                  "businessImpact": "sit consequat sunt Excepteur",
+                  "checkOutput": "ipsum incididunt amet",
+                  "ok": true,
+                  "severity": 75801957,
+                  "name": "de"
+                },
+                {
+                  "technicalSummary": "exercitation eu ut",
+                  "severity": 42923798,
+                  "name": "ulla",
                   "ok": false,
-                  "checkOutput": "aute veniam",
-                  "name": "commodo in amet qui"
+                  "panicGuide": "irure Lorem",
+                  "checkOutput": "ea deserunt laboris",
+                  "lastUpdated": "sed commodo exercitation consectetur"
+                },
+                {
+                  "lastUpdated": "non ex",
+                  "businessImpact": "aliquip Ut qui do nulla"
                 }
               ],
-              "severity": 48572025,
-              "description": "nulla adipisicing qui aute"
+              "schemaVersion": -66094298
             }
 
     + Schema
